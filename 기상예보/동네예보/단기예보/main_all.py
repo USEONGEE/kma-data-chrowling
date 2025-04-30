@@ -171,9 +171,7 @@ def generate_second_request_body(stnm: str, column: str, start: str, end: str) -
 BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 지역코드 CSV 파일 상대 경로 (스크립트 기준)
-지역코드_상대경로 = os.path.join(
-     "지역코드.csv"
-)
+지역코드_상대경로 = os.path.join("지역코드.csv")
 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, 지역코드_상대경로)
 
 # CSV 로딩
@@ -253,21 +251,24 @@ for 동이름, 동코드 in 동_set:
                 category_dir = os.path.join(dong_dir, column[0])
                 os.makedirs(category_dir, exist_ok=True)
 
+                # 3. 압축 해제: data/동이름/카테고리 디렉토리 하위에 압축 해제
                 with zipfile.ZipFile(zip_filepath, "r") as zip_ref:
                     for info in zip_ref.infolist():
                         try:
-                            # zip 내부 파일 이름은 기본적으로 cp437 인코딩되어 있을 수 있으므로 euc-kr로 디코딩
                             fixed_filename = info.filename.encode("cp437").decode(
                                 "euc-kr"
                             )
-                        except Exception as e:
-                            print("디코딩 실패:", info.filename, e)
+                        except Exception:
                             fixed_filename = info.filename
                         target_path = os.path.join(category_dir, fixed_filename)
                         os.makedirs(os.path.dirname(target_path), exist_ok=True)
                         with open(target_path, "wb") as out_file:
                             out_file.write(zip_ref.read(info.filename))
                         print("추출 완료:", fixed_filename)
+
+                # ZIP 파일 삭제
+                os.remove(zip_filepath)
+                print("원본 ZIP 파일 삭제 완료:", zip_filepath)
 
                 print(
                     f"압축 해제 완료. CSV 파일들은 '{category_dir}' 폴더에 저장되었습니다."

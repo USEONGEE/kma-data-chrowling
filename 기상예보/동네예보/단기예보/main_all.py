@@ -171,7 +171,9 @@ def generate_second_request_body(stnm: str, column: str, start: str, end: str) -
 BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 지역코드 CSV 파일 상대 경로 (스크립트 기준)
-지역코드_상대경로 = "data/src/기상예보/동네예보/단기예보/지역코드.csv"
+지역코드_상대경로 = os.path.join(
+    "data", "src", "기상예보", "동네예보", "단기예보", "지역코드.csv"
+)
 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, 지역코드_상대경로)
 
 # CSV 로딩
@@ -182,9 +184,8 @@ BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     지역코드_df[["Level3", "ReqList_Last"]].itertuples(index=False, name=None)
 )
 
-# 동이름 = "정선읍"
-# 동코드 = "89_123"
-BASE_DIR = "data/data/기상예보/동네예보/단기예보"
+# 데이터 저장 디렉토리도 os.path.join으로 설정
+BASE_DIR = os.path.join("data", "data", "기상예보", "동네예보", "단기예보")
 
 
 # -------------------------------
@@ -197,7 +198,8 @@ date_intervals = generate_date_intervals(start_date_obj, end_date_obj)
 # -------------------------------
 # 데이터 생성 및 파일 다운로드/압축해제 루프
 # -------------------------------
-cookie_str = "loginId=shdbtjd8@gmail.com; JSESSIONID=FTSxUQzyClPTzf0zVkwjp0bMTq1JFkHjuCsR1qaa793UT1Fal1M3KEddP0FzYi1w.was01_servlet_engine5"
+session = str(input("세션을 입력하세요: "))
+cookie_str = f"loginId=shdbtjd8@gmail.com; JSESSIONID={session}"
 first_header = create_first_header(cookie_str)
 second_header = create_second_header(cookie_str)
 for 동이름, 동코드 in 동_set:

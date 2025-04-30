@@ -18,16 +18,16 @@ korean_labels = [
     "풍속",
     "하늘상태",
     "습도",
-    # "일최고기온",
-    # "일최저기온",
-    # "강수형태",
-    # "강수확률",
-    # "동서바람성분",
-    # "남북바람성분",
-    # "1시간강수량",
-    # "1시간적설",
-    # "파고",
-    # "풍향",
+    "일최고기온",
+    "일최저기온",
+    "강수형태",
+    "강수확률",
+    "동서바람성분",
+    "남북바람성분",
+    "1시간강수량",
+    "1시간적설",
+    "파고",
+    "풍향",
 ]
 
 var_codes = [
@@ -35,16 +35,16 @@ var_codes = [
     "WSD",
     "SKY",
     "REH",
-    # "TMX",
-    # "TMN",
-    # "PTY",
-    # "POP",
-    # "UUU",
-    # "VVV",
-    # "PCP",
-    # "SNO",
-    # "WAV",
-    # "VEC",
+    "TMX",
+    "TMN",
+    "PTY",
+    "POP",
+    "UUU",
+    "VVV",
+    "PCP",
+    "SNO",
+    "WAV",
+    "VEC",
 ]
 
 # 두 리스트를 zip하여 튜플들의 집합을 만듭니다.
@@ -172,7 +172,7 @@ BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 지역코드 CSV 파일 상대 경로 (스크립트 기준)
 지역코드_상대경로 = os.path.join(
-    "data", "src", "기상예보", "동네예보", "단기예보", "지역코드.csv"
+     "지역코드.csv"
 )
 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, 지역코드_상대경로)
 
@@ -192,14 +192,14 @@ BASE_DIR = os.path.join("data", "data", "기상예보", "동네예보", "단기�
 # 날짜 설정 (예: 2025-03-14 ~ 2025-03-18)
 # -------------------------------
 start_date_obj = datetime(2021, 7, 1)
-end_date_obj = datetime(2023, 12, 31)
+end_date_obj = datetime(2021, 12, 31)
 date_intervals = generate_date_intervals(start_date_obj, end_date_obj)
 
 # -------------------------------
 # 데이터 생성 및 파일 다운로드/압축해제 루프
 # -------------------------------
-session = str(input("세션을 입력하세요: "))
-cookie_str = f"loginId=shdbtjd8@gmail.com; JSESSIONID={session}"
+session_str = str(input("세션을 입력하세요: "))
+cookie_str = f"loginId=shdbtjd8@gmail.com; JSESSIONID={session_str}"
 first_header = create_first_header(cookie_str)
 second_header = create_second_header(cookie_str)
 for 동이름, 동코드 in 동_set:

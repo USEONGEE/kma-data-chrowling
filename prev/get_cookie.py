@@ -46,4 +46,12 @@ def get_login_cookie(driver):
         if cookie["name"] == "JSESSIONID":
             cookie = cookie["value"]
 
-    return f"loginId={email}; JSESSIONID={cookie}"
+    is_none = False
+    if cookie["value"] is None or cookie["value"].strip() == "":
+        is_none = True
+
+    return f"loginId={email}; JSESSIONID={cookie['value']}", is_none
+
+
+response = get_login_cookie(driver)
+print(response)

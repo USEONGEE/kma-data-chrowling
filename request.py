@@ -1,3 +1,7 @@
+"""
+단기예보 사용되는 행정구역과 그에 매칭되는 코드를 추출하기 위한 코드
+"""
+
 import os
 import csv
 import json
@@ -149,57 +153,3 @@ for i in range(page_num - 1):
     except Exception as e:
         print("다음 페이지 버튼을 찾을 수 없으므로 작업을 종료합니다.", e)
         break
-
-while True:
-    print(f"\n===== 페이지 {page_num} 작업 시작 =====")
-
-    # 3. "#checkAll" 버튼 클릭
-    try:
-        driver.find_element(By.CSS_SELECTOR, "#checkAll").click()
-    except Exception as e:
-        print("checkAll 버튼 클릭 실패:", e)
-    time.sleep(1)
-
-    # 4. "#wrap_content > div.wrap_itm.area_data > div.cont_itm > div.ft_lst > div.right > a" 클릭
-    try:
-        driver.find_element(
-            By.CSS_SELECTOR,
-            "#wrap_content > div.wrap_itm.area_data > div.cont_itm > div.ft_lst > div.right > a",
-        ).click()
-    except Exception as e:
-        print("데이터 요청 버튼 클릭 실패:", e)
-    time.sleep(2)
-
-    # 5. 만약 "#reqstPurposeCd14" 요소가 있으면 클릭 후 요청 버튼 클릭
-    try:
-        req_elem = driver.find_element(By.CSS_SELECTOR, "#reqstPurposeCd14")
-        req_elem.click()
-        time.sleep(1)
-        driver.find_element(
-            By.CSS_SELECTOR,
-            "#sltUsePop > div > div > div.cont_layer.box > div > a.btn_request",
-        ).click()
-        time.sleep(2)
-    except Exception as e:
-        print("#reqstPurposeCd14 요소가 없으므로 해당 단계 건너뜁니다.")
-
-    # 6. 요청 전송 후 충분한 시간 대기 (네트워크 요청이 모두 발생하도록)
-    time.sleep(120)
-
-    # --- 해당 페이지의 요청 캡처 및 CSV 저장 ---
-    capture_requests(driver)
-
-    # --- 다음 페이지로 이동 ---
-    try:
-        next_btn = driver.find_element(
-            By.CSS_SELECTOR,
-            "#wrap_content > div.wrap_itm.area_data > div.cont_itm > div.ft_lst > div.wrap_paging > ul > li.next > a",
-        )
-        next_btn.click()
-        page_num += 1
-        time.sleep(5)  # 다음 페이지 로딩 대기
-    except Exception as e:
-        print("다음 페이지 버튼을 찾을 수 없으므로 작업을 종료합니다.", e)
-        break
-
-driver.quit()

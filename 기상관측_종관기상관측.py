@@ -1,8 +1,10 @@
 import os
+
 import zipfile
 import requests
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
 
 # -------------------------------
 # 기본 설정 및 상수
@@ -12,36 +14,36 @@ session = requests.Session()
 
 korean_labels = [
     "1시간기온",
-    "일최고기온",
-    "일최저기온",
-    "하늘상태",
-    "강수형태",
-    "강수확률",
-    "동서바람성분",
-    "남북바람성분",
-    "1시간강수량",
-    "1시간적설",
-    "습도",
-    "파고",
     "풍속",
-    "풍향",
+    "하늘상태",
+    "습도",
+    # "일최고기온",
+    # "일최저기온",
+    # "강수형태",
+    # "강수확률",
+    # "동서바람성분",
+    # "남북바람성분",
+    # "1시간강수량",
+    # "1시간적설",
+    # "파고",
+    # "풍향",
 ]
 
 var_codes = [
     "TMP",
-    "TMX",
-    "TMN",
-    "SKY",
-    "PTY",
-    "POP",
-    "UUU",
-    "VVV",
-    "PCP",
-    "SNO",
-    "REH",
-    "WAV",
     "WSD",
-    "VEC",
+    "SKY",
+    "REH",
+    # "TMX",
+    # "TMN",
+    # "PTY",
+    # "POP",
+    # "UUU",
+    # "VVV",
+    # "PCP",
+    # "SNO",
+    # "WAV",
+    # "VEC",
 ]
 
 # 두 리스트를 zip하여 튜플들의 집합을 만듭니다.
@@ -124,9 +126,11 @@ def generate_date_intervals(
 # -------------------------------
 # 요청 본문 생성 함수
 # -------------------------------
-def generate_first_request_body(column: tuple, start: str, end: str, stnm: str) -> dict:
+def generate_first_request_body(
+    column: tuple, start: str, end: str, stnm: str, 동코드
+) -> dict:
     data_code = "424"  # 지역 바뀌어도 이 값은 변하지 않음
-    var3 = "55_125"  # 지역 바뀌어도 이 값은 변하지 않음
+    var3 = 동코드
     return {
         "apiCd": "request420",
         "data_code": data_code,
@@ -159,91 +163,97 @@ def generate_second_request_body(stnm: str, column: str, start: str, end: str) -
 
 
 # -------------------------------
-# 쿠키 및 헤더 설정
-# -------------------------------
-cookie_str = "loginId=shdbtjd8@gmail.com; JSESSIONID=jMIjtOyYYC7AtGMNTW0QFx584Ync4YOTMnIJPs9ab3WAwaQ3vz5XjsoxQfnDgosb"
-first_header = create_first_header(cookie_str)
-second_header = create_second_header(cookie_str)
-
-
-# -------------------------------
 # 동네 이름 및 디렉토리 생성
 # -------------------------------
-동이름 = "석남1동"
-BASE_DIR = "data"
-dong_dir = os.path.join(BASE_DIR, 동이름)
-os.makedirs(dong_dir, exist_ok=True)
+동_set = [("동면", "98_79"), ("마산면", "57_95")]
+
+# 동이름 = "정선읍"
+# 동코드 = "89_123"
+BASE_DIR = "data/data"
 
 
 # -------------------------------
 # 날짜 설정 (예: 2025-03-14 ~ 2025-03-18)
 # -------------------------------
-start_date_obj = datetime(2025, 3, 14)
-end_date_obj = datetime(2025, 3, 18)
+start_date_obj = datetime(2021, 7, 1)
+end_date_obj = datetime(2023, 12, 31)
 date_intervals = generate_date_intervals(start_date_obj, end_date_obj)
 
 # -------------------------------
 # 데이터 생성 및 파일 다운로드/압축해제 루프
 # -------------------------------
-for start_date, end_date in date_intervals:
-    for column in list(COLUMN_SET)[:1]:  # 예시로 첫 3개 카테고리에 대해 실행
-        # 1. 데이터 생성 요청
-        request_body = generate_first_request_body(column, start_date, end_date, 동이름)
-        url_generation = (
-            "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do"
-        )
-        print(
-            "데이터 생성 요청 중...", f"컬럼: {column} 구간: {start_date} ~ {end_date}"
-        )
-        response_generation = session.post(
-            url_generation, headers=first_header, data=request_body
-        )
-        print("데이터 생성 요청 상태 코드:", response_generation.status_code)
-        print("데이터 생성 요청 응답:", response_generation.text)
+cookie_str = "loginId=shdbtjd8@gmail.com; JSESSIONID=FTSxUQzyClPTzf0zVkwjp0bMTq1JFkHjuCsR1qaa793UT1Fal1M3KEddP0FzYi1w.was01_servlet_engine5"
+first_header = create_first_header(cookie_str)
+second_header = create_second_header(cookie_str)
+for 동이름, 동코드 in 동_set:
+    # print("동이름:", 동이름, "동코드:", 동코드)
 
-        # 2. 파일 다운로드 요청
-        url_download = "https://data.kma.go.kr/data/rmt/downloadZip.do"
-        data_download = {
-            "downFile": generate_second_request_body(
-                동이름, column[0], start_date, end_date
+    dong_dir = os.path.join(BASE_DIR, 동이름)
+    os.makedirs(dong_dir, exist_ok=True)
+    for start_date, end_date in date_intervals:
+        for column in list(COLUMN_SET):  # 예시로 첫 3개 카테고리에 대해 실행
+            # 1. 데이터 생성 요청
+            request_body = generate_first_request_body(
+                column, start_date, end_date, 동이름, 동코드
             )
-        }
-        print("파일 다운로드 요청 중...")
-        response_download = session.post(
-            url_download, headers=second_header, data=data_download, stream=True
-        )
-
-        if response_download.status_code == 200:
-            # zip 파일은 동 디렉토리 하위에 저장
-            zip_filename = f"{동이름}_{column[0]}_{start_date}_{end_date}.zip"
-            zip_filepath = os.path.join(dong_dir, zip_filename)
-            with open(zip_filepath, "wb") as f:
-                for chunk in response_download.iter_content(chunk_size=8192):
-                    if chunk:
-                        print(chunk)
-                        f.write(chunk)
-            print("파일 다운로드 완료:", zip_filepath)
-
-            # 3. 압축 해제: data/동이름/카테고리 디렉토리 하위에 압축 해제
-            category_dir = os.path.join(dong_dir, column[0])
-            os.makedirs(category_dir, exist_ok=True)
-
-            with zipfile.ZipFile(zip_filepath, "r") as zip_ref:
-                for info in zip_ref.infolist():
-                    try:
-                        # zip 내부 파일 이름은 기본적으로 cp437 인코딩되어 있을 수 있으므로 euc-kr로 디코딩
-                        fixed_filename = info.filename.encode("cp437").decode("euc-kr")
-                    except Exception as e:
-                        print("디코딩 실패:", info.filename, e)
-                        fixed_filename = info.filename
-                    target_path = os.path.join(category_dir, fixed_filename)
-                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                    with open(target_path, "wb") as out_file:
-                        out_file.write(zip_ref.read(info.filename))
-                    print("추출 완료:", fixed_filename)
-
+            url_generation = (
+                "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do"
+            )
             print(
-                f"압축 해제 완료. CSV 파일들은 '{category_dir}' 폴더에 저장되었습니다."
+                "데이터 생성 요청 중...",
+                f"컬럼: {column} 구간: {start_date} ~ {end_date}",
             )
-        else:
-            print("파일 다운로드 실패, 상태 코드:", response_download.status_code)
+            response_generation = session.post(
+                url_generation, headers=first_header, data=request_body
+            )
+            print("데이터 생성 요청 상태 코드:", response_generation.status_code)
+            print("데이터 생성 요청 응답:", response_generation.text)
+
+            # 2. 파일 다운로드 요청
+            url_download = "https://data.kma.go.kr/data/rmt/downloadZip.do"
+            data_download = {
+                "downFile": generate_second_request_body(
+                    동이름, column[0], start_date, end_date
+                )
+            }
+            print("파일 다운로드 요청 중...")
+            response_download = session.post(
+                url_download, headers=second_header, data=data_download, stream=True
+            )
+
+            if response_download.status_code == 200:
+                # zip 파일은 동 디렉토리 하위에 저장
+                zip_filename = f"{동이름}_{column[0]}_{start_date}_{end_date}.zip"
+                zip_filepath = os.path.join(dong_dir, zip_filename)
+                with open(zip_filepath, "wb") as f:
+                    for chunk in response_download.iter_content(chunk_size=8192):
+                        if chunk:
+                            print(chunk)
+                            f.write(chunk)
+                print("파일 다운로드 완료:", zip_filepath)
+
+                # 3. 압축 해제: data/동이름/카테고리 디렉토리 하위에 압축 해제
+                category_dir = os.path.join(dong_dir, column[0])
+                os.makedirs(category_dir, exist_ok=True)
+
+                with zipfile.ZipFile(zip_filepath, "r") as zip_ref:
+                    for info in zip_ref.infolist():
+                        try:
+                            # zip 내부 파일 이름은 기본적으로 cp437 인코딩되어 있을 수 있으므로 euc-kr로 디코딩
+                            fixed_filename = info.filename.encode("cp437").decode(
+                                "euc-kr"
+                            )
+                        except Exception as e:
+                            print("디코딩 실패:", info.filename, e)
+                            fixed_filename = info.filename
+                        target_path = os.path.join(category_dir, fixed_filename)
+                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                        with open(target_path, "wb") as out_file:
+                            out_file.write(zip_ref.read(info.filename))
+                        print("추출 완료:", fixed_filename)
+
+                print(
+                    f"압축 해제 완료. CSV 파일들은 '{category_dir}' 폴더에 저장되었습니다."
+                )
+            else:
+                print("파일 다운로드 실패, 상태 코드:", response_download.status_code)

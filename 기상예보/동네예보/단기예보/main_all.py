@@ -121,7 +121,7 @@ def generate_date_intervals(
             (current_start.strftime("%Y%m%d"), current_end.strftime("%Y%m%d"))
         )
         current_start = current_end
-    return intervals
+    return intervals  
 
 
 # -------------------------------

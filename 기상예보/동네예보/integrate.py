@@ -115,6 +115,7 @@ def gen_request_body_common(
     api_cd: str,
     data_cd: str,
     reqst_purpose_cd: str,
+    select_type: str,
 ):
     return {
         "apiCd": api_cd,
@@ -126,7 +127,7 @@ def gen_request_body_common(
         "reqst_purpose_cd": reqst_purpose_cd,
         "recordCountPerPage": "10",
         "txtVar1Nm": var_name,
-        "selectType": "1",
+        "selectType": select_type,
         "startDt": start[:4],
         "startMt": start[4:6],
         "endDt": end[:4],
@@ -159,6 +160,7 @@ CONFIGS = [
         "reqst_purpose_cd": "F00415",
         "interval": (datetime(2021, 10, 1), datetime(2025, 4, 30)),
         "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do",
+        "selectType": "1",
         "vars": [
             ("1시간기온", "TMP"),
             ("풍속", "WSD"),
@@ -184,6 +186,7 @@ CONFIGS = [
         "reqst_purpose_cd": "F00401",
         "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxAjax.do",
         "interval": (datetime(2010, 7, 1), datetime(2025, 4, 30)),
+        "selectType": "1",
         "vars": [
             ("강수형태", "PTY"),
             ("습도", "REH"),
@@ -203,6 +206,7 @@ CONFIGS = [
         "reqst_purpose_cd": "F00415",
         "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do",
         "interval": (datetime(2021, 7, 1), datetime(2025, 4, 30)),
+        "selectType": "1",
         "vars": [
             ("강수형태", "PTY"),
             ("습도", "REH"),
@@ -214,6 +218,32 @@ CONFIGS = [
             ("풍속", "WSD"),
             ("동서바람성분", "UUU"),
             ("남북바람성분", "VVV"),
+        ],
+    },
+    {
+        "name": "구_단기예보",
+        "code": "420",
+        "api": "request420",
+        "mode": "monthly",
+        "reqst_purpose_cd": "F00415",
+        "interval": (datetime(2015, 10, 1), datetime(2021, 6, 29)),
+        "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxAjax.do",
+        "selectType": "2",
+        "vars": [
+            ("3시간기온", "T3H"),
+            ("일최고기온", "TMX"),
+            ("일최저기온", "TMN"),
+            ("하늘상태", "SKY"),
+            ("강수형태", "PTY"),
+            ("강수확률", "POP"),
+            ("6시간강수량", "R06"),
+            ("12시간강수량", "R12"),
+            ("6시간적설", "S06"),
+            ("12시간신적설", "S12"),
+            ("습도", "REH"),
+            ("파고", "WAV"),
+            ("풍속", "WSD"),
+            ("풍향", "VEC"),
         ],
     },
 ]
@@ -277,6 +307,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                         cfg["api"],
                         cfg["code"],
                         cfg["reqst_purpose_cd"],
+                        cfg["selectType"],
                     )
                     session.post(
                         cfg["request_url"],

@@ -178,19 +178,14 @@ def get_headers(cookie_str: str) -> dict:
 # 경로 및 데이터 준비
 # -------------------------------
 
-# BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
+BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
 
-# 지역코드_df = load_region_code(지역코드_파일경로)
-# filtered_df = get_region_slice(
-#     지역코드_df,
-#     method="from_region",  # 또는 "starts_with", "exact_match", "custom_range"
-#     value="서울특별시|종로구|교남동",  # 또는 인덱스 범위 등
-# )
-# filtered_df = 지역코드_df
-# 동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
+지역코드_df = load_region_code(지역코드_파일경로)
+filtered_df = 지역코드_df
+동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
 
-동_set = [("부산광역시", "동구", "초량제3동", "97_74")]
+# 동_set = [("부산광역시", "동구", "초량제3동", "97_74")]
 
 
 BASE_DIR = os.path.join("data", "기상예보", "동네예보", "초단기실황")

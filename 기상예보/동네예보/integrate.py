@@ -303,7 +303,6 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                                 tgt_path = os.path.join(cat_dir, filename)
                                 with open(tgt_path, "wb") as out_f:
                                     out_f.write(z.read(info.filename))
-                                print(f"  > 추출: {filename}")
                                 extracted = True
                         os.remove(zip_path)
                         if extracted:

@@ -11,36 +11,29 @@ import pandas as pd
 session = requests.Session()
 
 korean_labels = [
-    "1시간기온",
-    "풍속",
-    "하늘상태",
-    "습도",
-    "일최고기온",
-    "일최저기온",
     "강수형태",
-    "강수확률",
+    "습도",
+    "강수",
+    "하늘상태",
+    "기온",
+    "뇌전",
+    "풍향",
+    "풍속",
     "동서바람성분",
     "남북바람성분",
-    "1시간강수량",
-    "1시간적설",
-    "파고",
-    "풍향",
 ]
+
 var_codes = [
-    "TMP",
-    "WSD",
-    "SKY",
-    "REH",
-    "TMX",
-    "TMN",
     "PTY",
-    "POP",
+    "REH",
+    "RN1",
+    "SKY",
+    "T1H",
+    "LGT",
+    "VEC",
+    "WSD",
     "UUU",
     "VVV",
-    "PCP",
-    "SNO",
-    "WAV",
-    "VEC",
 ]
 COLUMN_SET = list(zip(korean_labels, var_codes))
 
@@ -58,7 +51,7 @@ def create_first_header(cookie: str) -> dict:
         "Cookie": cookie,
         "Host": "data.kma.go.kr",
         "Origin": "https://data.kma.go.kr",
-        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=420&pgmNo=574",
+        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=410&pgmNo=571",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-origin",
@@ -81,7 +74,7 @@ def create_second_header(cookie: str) -> dict:
         "Cookie": cookie,
         "Host": "data.kma.go.kr",
         "Origin": "https://data.kma.go.kr",
-        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=420&pgmNo=574",
+        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=410&pgmNo=571",
         "Sec-Fetch-Dest": "iframe",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "same-origin",
@@ -117,10 +110,11 @@ def generate_date_intervals(
 # 요청 본문 생성 함수
 # -------------------------------
 def generate_first_request_body(
-    column: tuple, start: str, end: str, stnm: str, 동코드, data_code
+    column: tuple, start: str, end: str, stnm: str, 동코드
 ) -> dict:
+    data_code = "411"  # 동네예보 코드
     return {
-        "apiCd": "request420",
+        "apiCd": "request410",
         "data_code": data_code,
         "hour": "",
         "pageIndex": "1",
@@ -197,22 +191,25 @@ def get_headers(cookie_str: str) -> dict:
 # -------------------------------
 # 경로 및 데이터 준비
 # -------------------------------
-BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
 
-# df 생성
-지역코드_df = load_region_code(지역코드_파일경로)
-filtered_df = 지역코드_df
-동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
+# BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
 
-# 동_set = [("제주특별자치도", "서귀포시", "안덕면", "49_32")]
+# 지역코드_df = load_region_code(지역코드_파일경로)
+# filtered_df = get_region_slice(
+#     지역코드_df,
+#     method="from_region",  # 또는 "starts_with", "exact_match", "custom_range"
+#     value="서울특별시|종로구|교남동",  # 또는 인덱스 범위 등
+# )
+# filtered_df = 지역코드_df
+# 동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
 
-# 데이터 코드
-data_code = "424"
+동_set = [("제주특별자치도", "서귀포시", "안덕면", "49_32")]
 
-BASE_DIR = os.path.join("data", "기상예보", "동네예보", "단기예보")
+
+BASE_DIR = os.path.join("data", "기상예보", "동네예보", "초단기예보")
 # 날짜 생성
-start_date_obj = datetime(2021, 10, 1)
+start_date_obj = datetime(2021, 7, 1)
 end_date_obj = datetime(2025, 4, 30)
 date_intervals = generate_date_intervals(start_date_obj, end_date_obj)
 
@@ -230,7 +227,7 @@ for level1, level2, level3, 동코드 in 동_set:
     for start_date, end_date in date_intervals:
         for column in COLUMN_SET:
             request_body = generate_first_request_body(
-                column, start_date, end_date, level3, 동코드, data_code
+                column, start_date, end_date, level3, 동코드
             )
             url_generation = (
                 "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do"

@@ -10,37 +10,18 @@ import pandas as pd
 # -------------------------------
 session = requests.Session()
 
-korean_labels = [
-    "1시간기온",
-    "풍속",
-    "하늘상태",
-    "습도",
-    "일최고기온",
-    "일최저기온",
-    "강수형태",
-    "강수확률",
-    "동서바람성분",
-    "남북바람성분",
-    "1시간강수량",
-    "1시간적설",
-    "파고",
-    "풍향",
-]
+korean_labels = ["강수형태", "습도", "강수", "하늘상태", "기온", "뇌전", "풍향", "풍속"]
+
+
 var_codes = [
-    "TMP",
-    "WSD",
-    "SKY",
-    "REH",
-    "TMX",
-    "TMN",
     "PTY",
-    "POP",
-    "UUU",
-    "VVV",
-    "PCP",
-    "SNO",
-    "WAV",
+    "REH",
+    "RN1",
+    "SKY",
+    "T1H",
+    "LGT",
     "VEC",
+    "WSD",
 ]
 COLUMN_SET = list(zip(korean_labels, var_codes))
 
@@ -58,7 +39,7 @@ def create_first_header(cookie: str) -> dict:
         "Cookie": cookie,
         "Host": "data.kma.go.kr",
         "Origin": "https://data.kma.go.kr",
-        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=420&pgmNo=574",
+        "Referer": "ttps://data.kma.go.kr/data/rmt/rmtList.do?code=410&pgmNo=571",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-origin",
@@ -81,7 +62,7 @@ def create_second_header(cookie: str) -> dict:
         "Cookie": cookie,
         "Host": "data.kma.go.kr",
         "Origin": "https://data.kma.go.kr",
-        "Referer": "https://data.kma.go.kr/data/rmt/rmtList.do?code=420&pgmNo=574",
+        "Referer": "ttps://data.kma.go.kr/data/rmt/rmtList.do?code=410&pgmNo=571",
         "Sec-Fetch-Dest": "iframe",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "same-origin",
@@ -97,19 +78,17 @@ def create_second_header(cookie: str) -> dict:
 # -------------------------------
 # 날짜 구간 생성 함수
 # -------------------------------
-def generate_date_intervals(
-    start_date: datetime, end_date: datetime, delta_months: int = 1
-):
+def generate_month_intervals(start_date: datetime, end_date: datetime):
+    """
+    start_date부터 end_date까지 매월의 'YYYYMM' 문자열을 리스트로 반환합니다.
+    ex) ['201007', '201008', ..., '202504']
+    """
     intervals = []
-    current_start = start_date
-    while current_start < end_date:
-        current_end = current_start + relativedelta(months=delta_months)
-        if current_end > end_date:
-            current_end = end_date
-        intervals.append(
-            (current_start.strftime("%Y%m%d"), current_end.strftime("%Y%m%d"))
-        )
-        current_start = current_end
+    current = start_date.replace(day=1)
+    # end_date의 해당 월까지 포함시키려면 month 단위로 <= 비교
+    while current <= end_date:
+        intervals.append(current.strftime("%Y%m"))
+        current += relativedelta(months=1)
     return intervals
 
 
@@ -117,17 +96,18 @@ def generate_date_intervals(
 # 요청 본문 생성 함수
 # -------------------------------
 def generate_first_request_body(
-    column: tuple, start: str, end: str, stnm: str, 동코드, data_code
+    column: tuple, start: str, end: str, stnm: str, 동코드
 ) -> dict:
+    data_code = "400"  # 동네예보 코드
     return {
-        "apiCd": "request420",
+        "apiCd": "request400",
         "data_code": data_code,
         "hour": "",
         "pageIndex": "1",
         "from": start,
         "to": end,
         "file_size": "",
-        "reqst_purpose_cd": "F00415",
+        "reqst_purpose_cd": "F00401",
         "recordCountPerPage": "10",
         "txtVar1Nm": column[0],
         "selectType": "1",
@@ -197,59 +177,68 @@ def get_headers(cookie_str: str) -> dict:
 # -------------------------------
 # 경로 및 데이터 준비
 # -------------------------------
-BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
 
-# df 생성
-지역코드_df = load_region_code(지역코드_파일경로)
-filtered_df = 지역코드_df
-동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
+# BASE_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# 지역코드_파일경로 = os.path.join(BASE_SCRIPT_DIR, "지역코드_sep.csv")
 
-# 동_set = [("제주특별자치도", "서귀포시", "안덕면", "49_32")]
+# 지역코드_df = load_region_code(지역코드_파일경로)
+# filtered_df = get_region_slice(
+#     지역코드_df,
+#     method="from_region",  # 또는 "starts_with", "exact_match", "custom_range"
+#     value="서울특별시|종로구|교남동",  # 또는 인덱스 범위 등
+# )
+# filtered_df = 지역코드_df
+# 동_set = filtered_df[["Level1", "Level2", "Level3", "ReqList_Last"]].values.tolist()
 
-# 데이터 코드
-data_code = "424"
+동_set = [("부산광역시", "동구", "초량제3동", "97_74")]
 
-BASE_DIR = os.path.join("data", "기상예보", "동네예보", "단기예보")
+
+BASE_DIR = os.path.join("data", "기상예보", "동네예보", "초단기실황")
 # 날짜 생성
-start_date_obj = datetime(2021, 10, 1)
+start_date_obj = datetime(2010, 7, 1)
 end_date_obj = datetime(2025, 4, 30)
-date_intervals = generate_date_intervals(start_date_obj, end_date_obj)
+month_intervals = generate_month_intervals(start_date_obj, end_date_obj)
 
 
 # -------------------------------
 # 실행
 # -------------------------------
 cookie_str = get_cookie()
+print("쿠키 정보:", cookie_str)
 first_header, second_header = get_headers(cookie_str)
+
+import time
+
+time.sleep(1)
 
 for level1, level2, level3, 동코드 in 동_set:
     dong_dir = os.path.join(BASE_DIR, level1, level2, level3)
     os.makedirs(dong_dir, exist_ok=True)
 
-    for start_date, end_date in date_intervals:
+    for ym in month_intervals:
+        start = ym
+        end = ym
         for column in COLUMN_SET:
             request_body = generate_first_request_body(
-                column, start_date, end_date, level3, 동코드, data_code
+                column, start, end, level3, 동코드
             )
+
             url_generation = (
-                "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do"
+                "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxAjax.do"
             )
-            print(f"[{level3}] 요청 중: {column[0]} | {start_date} ~ {end_date}")
+            print(f"[{level3}] 요청 중: {column[0]} | {start} ~ {end}")
             session.post(url_generation, headers=first_header, data=request_body)
 
             url_download = "https://data.kma.go.kr/data/rmt/downloadZip.do"
             data_download = {
-                "downFile": generate_second_request_body(
-                    level3, column[0], start_date, end_date
-                )
+                "downFile": generate_second_request_body(level3, column[0], start, end)
             }
             response_download = session.post(
                 url_download, headers=second_header, data=data_download, stream=True
             )
 
             if response_download.status_code == 200:
-                zip_filename = f"{level3}_{column[0]}_{start_date}_{end_date}.zip"
+                zip_filename = f"{level3}_{column[0]}_{start}_{end}.zip"
                 zip_filepath = os.path.join(dong_dir, zip_filename)
                 with open(zip_filepath, "wb") as f:
                     for chunk in response_download.iter_content(chunk_size=8192):
@@ -259,6 +248,7 @@ for level1, level2, level3, 동코드 in 동_set:
 
                 category_dir = os.path.join(dong_dir, column[0])
                 os.makedirs(category_dir, exist_ok=True)
+                is_downloaded = False
                 with zipfile.ZipFile(zip_filepath, "r") as zip_ref:
                     for info in zip_ref.infolist():
                         try:
@@ -271,6 +261,12 @@ for level1, level2, level3, 동코드 in 동_set:
                         with open(target_path, "wb") as out_file:
                             out_file.write(zip_ref.read(info.filename))
                         print("    └ 추출 완료:", fixed_filename)
+                        is_downloaded = True
+
+                if not is_downloaded:
+                    print("  × ZIP 파일에서 추출된 파일이 없습니다.")
+                    cookie_str = get_cookie()
+                    first_header, second_header = get_headers(cookie_str)
 
                 os.remove(zip_filepath)
                 print("  - ZIP 삭제 완료:", zip_filename)

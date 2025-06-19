@@ -226,7 +226,7 @@ CONFIGS = [
         "api": "request420",
         "mode": "monthly",
         "reqst_purpose_cd": "F00415",
-        "interval": (datetime(2015, 10, 1), datetime(2021, 6, 29)),
+        "interval": (datetime(2008, 10, 1), datetime(2021, 6, 29)),
         "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxAjax.do",
         "selectType": "2",
         "vars": [

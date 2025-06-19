@@ -26,10 +26,12 @@ def load_region_code(path: str) -> pd.DataFrame:
 # 공통: 로그인 및 헤더 생성
 # -------------------------------
 def get_cookie(login_id: str, password: str) -> str:
+    print("로그인 중...")
     url = "https://data.kma.go.kr/login/loginAjax.do"
     resp = session.post(url, data={"loginId": login_id, "passwordNo": password})
     resp.raise_for_status()
     cookies = session.cookies.get_dict()
+    time.sleep(3)  # 로그인 후 잠시 대기
     return "; ".join([f"{k}={v}" for k, v in cookies.items()])
 
 
@@ -220,7 +222,6 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
     cookie = get_cookie(login_id, password)
     hdr1, hdr2 = make_headers(cookie)
     df_regions = load_region_code(REGION_CODE_PATH)
-    time.sleep(5)
 
     if order == "desc":
         df_regions = df_regions.iloc[::-1].reset_index(drop=True)

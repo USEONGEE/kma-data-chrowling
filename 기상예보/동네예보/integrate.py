@@ -312,6 +312,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                             print(
                                 f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ⛔ "
                             )
+                            time.sleep(1)
                     else:
                         print(f"  ! 다운로드 실패: {response.status_code}")
 

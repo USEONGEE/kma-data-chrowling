@@ -216,18 +216,20 @@ CONFIGS = [
 import time
 
 
-def main(login_id: str, password: str, order: str = "asc"):
+def main(login_id: str, password: str, order: str = "asc", config_index: int = None):
     cookie = get_cookie(login_id, password)
     hdr1, hdr2 = make_headers(cookie)
     df_regions = load_region_code(REGION_CODE_PATH)
-
     time.sleep(1)  # 로그인 후 잠시 대기
 
-    # 순서 처리: asc -> 그대로, desc -> 역순
+    # 순서 처리
     if order == "desc":
         df_regions = df_regions.iloc[::-1].reset_index(drop=True)
 
-    for cfg in CONFIGS:
+    # config 인덱스 처리
+    configs_to_run = [CONFIGS[config_index]] if config_index is not None else CONFIGS
+
+    for cfg in configs_to_run:
         intervals = gen_intervals(
             cfg["interval"][0],
             cfg["interval"][1],
@@ -248,6 +250,7 @@ def main(login_id: str, password: str, order: str = "asc"):
             for start, end in intervals:
                 for var_name, var_code in cfg["vars"]:
                     cat_dir = os.path.join(out_dir, var_name)
+                    # 이미 처리된 경우 건너뜀
                     if os.path.isdir(cat_dir) and os.listdir(cat_dir):
                         print(
                             f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 이미 처리됨, 건너뜀"
@@ -316,10 +319,17 @@ if __name__ == "__main__":
         default="asc",
         help="다운로드 순서 (asc: 처음부터, desc: 뒤부터)",
     )
+    parser.add_argument(
+        "--config-index",
+        type=int,
+        default=None,
+        help="실행할 CONFIGS 인덱스 (0부터 시작). 지정하지 않으면 전체 실행",
+    )
     args = parser.parse_args()
 
     main(
         args.login_id,
         args.password,
         order=args.order,
+        config_index=args.config_index,
     )

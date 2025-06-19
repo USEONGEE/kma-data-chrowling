@@ -220,7 +220,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
     cookie = get_cookie(login_id, password)
     hdr1, hdr2 = make_headers(cookie)
     df_regions = load_region_code(REGION_CODE_PATH)
-    time.sleep(1)
+    time.sleep(5)
 
     if order == "desc":
         df_regions = df_regions.iloc[::-1].reset_index(drop=True)

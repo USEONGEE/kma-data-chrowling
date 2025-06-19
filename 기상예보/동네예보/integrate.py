@@ -319,7 +319,8 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                             print(
                                 f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ⛔ "
                             )
-                            time.sleep(1)
+                            cookie = get_cookie(login_id, password)
+                            hdr1, hdr2 = make_headers(cookie)
                     else:
                         print(f"  ! 다운로드 실패: {response.status_code}")
 

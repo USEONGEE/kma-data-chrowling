@@ -220,13 +220,11 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
     cookie = get_cookie(login_id, password)
     hdr1, hdr2 = make_headers(cookie)
     df_regions = load_region_code(REGION_CODE_PATH)
-    time.sleep(1)  # 로그인 후 잠시 대기
+    time.sleep(1)
 
-    # 순서 처리
     if order == "desc":
         df_regions = df_regions.iloc[::-1].reset_index(drop=True)
 
-    # config 인덱스 처리
     configs_to_run = [CONFIGS[config_index]] if config_index is not None else CONFIGS
 
     for cfg in configs_to_run:
@@ -235,7 +233,9 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
             cfg["interval"][1],
             mode=("monthly" if cfg["mode"] == "monthly" else "range"),
         )
-        base_dir = os.path.join("data", "기상예보", "동네예보", cfg["name"])
+        base_dir = os.path.join(
+            BASE_SCRIPT_DIR, "data", "기상예보", "동네예보", cfg["name"]
+        )
 
         for _, row in df_regions.iterrows():
             lvl1, lvl2, lvl3, code = (
@@ -249,9 +249,13 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
 
             for start, end in intervals:
                 for var_name, var_code in cfg["vars"]:
+                    # 추출 대상 파일명
+                    expected_csv = f"{lvl3}_{var_name}_{start}_{end}.csv"
                     cat_dir = os.path.join(out_dir, var_name)
-                    # 이미 처리된 경우 건너뜀
-                    if os.path.isdir(cat_dir) and os.listdir(cat_dir):
+                    csv_path = os.path.join(cat_dir, expected_csv)
+
+                    # 이미 추출된 CSV 파일이 있으면 건너뜀
+                    if os.path.exists(csv_path):
                         print(
                             f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 이미 처리됨, 건너뜀"
                         )
@@ -281,9 +285,11 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                         data=gen_download_payload(lvl3, var_name, start, end),
                         stream=True,
                     )
+
                     if response.status_code == 200:
                         zip_name = f"{lvl3}_{var_name}_{start}_{end}.zip"
                         zip_path = os.path.join(out_dir, zip_name)
+                        os.makedirs(os.path.dirname(zip_path), exist_ok=True)
                         with open(zip_path, "wb") as f:
                             for chunk in response.iter_content(8192):
                                 f.write(chunk)

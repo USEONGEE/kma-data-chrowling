@@ -257,9 +257,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
 
                     # 이미 추출된 CSV 파일이 있으면 건너뜀
                     if os.path.exists(csv_path):
-                        print(
-                            f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 이미 처리됨, 건너뜀"
-                        )
+                        print(f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ▶")
                         continue
 
                     req_body = gen_request_body_common(
@@ -309,9 +307,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                                 extracted = True
                         os.remove(zip_path)
                         if extracted:
-                            print(
-                                f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 추출 완료"
-                            )
+                            print(f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ✅")
                         else:
                             print(
                                 f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ⛔ "

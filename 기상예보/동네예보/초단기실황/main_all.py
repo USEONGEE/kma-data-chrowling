@@ -158,8 +158,8 @@ def get_cookie():
     response = session.post(
         login_url,
         data={
-            "loginId": "shdbtjd8@gmail.com",  # 여기에 KMA 계정 ID 입력
-            "passwordNo": "yuseong0745%",  # 여기에 KMA 계정 비밀번호 입력
+            "loginId": "new9279@naver.com",  # 여기에 KMA 계정 ID 입력
+            "passwordNo": "a22-13118@",  # 여기에 KMA 계정 비밀번호 입력
         },
     )
     if response.status_code == 200:

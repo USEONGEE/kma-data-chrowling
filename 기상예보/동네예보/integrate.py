@@ -114,6 +114,7 @@ def gen_request_body_common(
     region_code: str,
     api_cd: str,
     data_cd: str,
+    reqst_purpose_cd: str,
 ):
     return {
         "apiCd": api_cd,
@@ -122,7 +123,7 @@ def gen_request_body_common(
         "pageIndex": "1",
         "from": start,
         "to": end,
-        "reqst_purpose_cd": "F00415",
+        "reqst_purpose_cd": reqst_purpose_cd,
         "recordCountPerPage": "10",
         "txtVar1Nm": var_name,
         "selectType": "1",
@@ -155,7 +156,9 @@ CONFIGS = [
         "code": "424",
         "api": "request420",
         "mode": "range",
+        "reqst_purpose_cd": "F00415",
         "interval": (datetime(2021, 10, 1), datetime(2025, 4, 30)),
+        "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do",
         "vars": [
             ("1시간기온", "TMP"),
             ("풍속", "WSD"),
@@ -178,6 +181,8 @@ CONFIGS = [
         "code": "400",
         "api": "request400",
         "mode": "monthly",
+        "reqst_purpose_cd": "F00401",
+        "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxAjax.do",
         "interval": (datetime(2010, 7, 1), datetime(2025, 4, 30)),
         "vars": [
             ("강수형태", "PTY"),
@@ -195,6 +200,8 @@ CONFIGS = [
         "code": "411",
         "api": "request410",
         "mode": "range",
+        "reqst_purpose_cd": "F00415",
+        "request_url": "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do",
         "interval": (datetime(2021, 7, 1), datetime(2025, 4, 30)),
         "vars": [
             ("강수형태", "PTY"),
@@ -269,9 +276,10 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                         code,
                         cfg["api"],
                         cfg["code"],
+                        cfg["reqst_purpose_cd"],
                     )
                     session.post(
-                        "https://data.kma.go.kr/mypage/rmt/callDtaReqstIrods4xxNewAjax.do",
+                        cfg["request_url"],
                         headers=hdr1,
                         data=req_body,
                     )

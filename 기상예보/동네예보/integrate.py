@@ -262,9 +262,6 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                         )
                         continue
 
-                    print(
-                        f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 요청 및 다운로드 시작"
-                    )
                     req_body = gen_request_body_common(
                         var_name,
                         var_code,
@@ -296,6 +293,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                                 f.write(chunk)
 
                         os.makedirs(cat_dir, exist_ok=True)
+                        extracted = False
                         with zipfile.ZipFile(zip_path) as z:
                             for info in z.infolist():
                                 try:
@@ -308,7 +306,16 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
                                 with open(tgt_path, "wb") as out_f:
                                     out_f.write(z.read(info.filename))
                                 print(f"  > 추출: {filename}")
+                                extracted = True
                         os.remove(zip_path)
+                        if extracted:
+                            print(
+                                f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} 추출 완료"
+                            )
+                        else:
+                            print(
+                                f"[{cfg['name']}:{lvl3}] {var_name} {start}~{end} ⛔ "
+                            )
                     else:
                         print(f"  ! 다운로드 실패: {response.status_code}")
 

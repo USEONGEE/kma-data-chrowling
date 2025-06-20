@@ -297,9 +297,7 @@ def main(login_id: str, password: str, order: str = "asc", config_index: int = N
             cfg["interval"][1],
             mode=("monthly" if cfg["mode"] == "monthly" else "range"),
         )
-        base_dir = os.path.join(
-            BASE_SCRIPT_DIR, "data", "기상예보", "동네예보", cfg["name"]
-        )
+        base_dir = os.path.join(BASE_SCRIPT_DIR, "data", cfg["name"])
 
         for _, row in df_regions.iterrows():
             lvl1, lvl2, lvl3, code = (
